@@ -54,7 +54,6 @@ fun LittleLemonNavHost(
         composable(Routes.PROFILE) {
             ProfileScreen(
                 preferences = preferences,
-                onBack = { navController.popBackStack() },
                 onLogout = {
                     onLogout()
                     navController.navigate(Routes.ONBOARDING) {

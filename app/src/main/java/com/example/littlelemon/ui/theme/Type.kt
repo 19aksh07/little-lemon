@@ -2,45 +2,60 @@ package com.example.littlelemon.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.example.littlelemon.R
+
+val Karla = FontFamily(
+    Font(R.font.karla_regular, FontWeight.Normal)
+)
+
+val Markazi = FontFamily(
+    Font(R.font.markazi_text_regular, FontWeight.Normal)
+)
 
 // Set of Material typography styles to start with
 val Typography = Typography(
-    headlineSmall = TextStyle(
-        fontFamily = FontFamily.Default,
+    displayLarge = TextStyle(
+        fontFamily = Markazi,
         fontWeight = FontWeight.Medium,
-        fontSize = 28.sp,
-        lineHeight = 34.sp,
-        letterSpacing = 0.sp
+        fontSize = 64.sp
+    ),
+    displayMedium = TextStyle(
+        fontFamily = Markazi,
+        fontWeight = FontWeight.Normal,
+        fontSize = 40.sp
+    ),
+    headlineSmall = TextStyle(
+        fontFamily = Karla,
+        fontWeight = FontWeight.Bold,
+        fontSize = 20.sp
     ),
     titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
+        fontFamily = Karla,
+        fontWeight = FontWeight.Bold,
+        fontSize = 18.sp
     ),
     titleMedium = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.SemiBold,
-        fontSize = 18.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.sp
+        fontFamily = Karla,
+        fontWeight = FontWeight.Bold,
+        fontSize = 16.sp
     ),
     bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = Karla,
         fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.sp
+        fontSize = 16.sp
+    ),
+    bodyMedium = TextStyle(
+        fontFamily = Karla,
+        fontWeight = FontWeight.Normal,
+        fontSize = 14.sp
     ),
     labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.sp
+        fontFamily = Karla,
+        fontWeight = FontWeight.Bold,
+        fontSize = 12.sp
     )
 )

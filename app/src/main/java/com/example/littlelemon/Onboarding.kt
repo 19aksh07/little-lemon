@@ -2,7 +2,6 @@ package com.example.littlelemon
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -31,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -41,6 +41,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.littlelemon.ui.theme.LittleLemonGreen
 import com.example.littlelemon.ui.theme.LittleLemonYellow
+import com.example.littlelemon.ui.theme.LittleLemonCharcoal
 import com.example.littlelemon.ui.theme.LittleLemonTheme
 
 @Composable
@@ -51,11 +52,9 @@ fun Onboarding(
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
     var firstNameError by remember { mutableStateOf<String?>(null) }
     var lastNameError by remember { mutableStateOf<String?>(null) }
     var emailError by remember { mutableStateOf<String?>(null) }
-    var passwordError by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = modifier
@@ -64,121 +63,112 @@ fun Onboarding(
             .verticalScroll(rememberScrollState())
             .imePadding()
             .statusBarsPadding()
-            .navigationBarsPadding()
-            .padding(horizontal = 24.dp, vertical = 24.dp),
+            .navigationBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
+        // Header
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .widthIn(max = 520.dp)
-                .border(1.dp, LittleLemonLightBorder)
+                .height(100.dp)
+                .padding(vertical = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(88.dp)
-                    .padding(horizontal = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "Little Lemon logo",
-                    modifier = Modifier.widthIn(max = 190.dp)
-                )
-            }
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = "Little Lemon logo",
+                modifier = Modifier.height(40.dp)
+            )
+        }
 
+        // Hero Section
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(LittleLemonGreen)
+                .padding(vertical = 40.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
             Text(
                 text = "Let's get to know you",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(LittleLemonGreen)
-                    .padding(vertical = 28.dp),
                 color = Color.White,
-                style = MaterialTheme.typography.titleLarge,
+                style = MaterialTheme.typography.displayMedium,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
+        }
 
-            Column(
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 34.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+        // Form Section
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 40.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
+        ) {
+            Text(
+                text = "Personal information",
+                style = MaterialTheme.typography.titleLarge,
+                color = LittleLemonCharcoal
+            )
+
+            OnboardingField(
+                value = firstName,
+                onValueChange = { firstName = it },
+                label = "First name",
+                errorMessage = firstNameError
+            )
+            OnboardingField(
+                value = lastName,
+                onValueChange = { lastName = it },
+                label = "Last name",
+                errorMessage = lastNameError
+            )
+            OnboardingField(
+                value = email,
+                onValueChange = { email = it },
+                label = "Email",
+                keyboardType = KeyboardType.Email,
+                errorMessage = emailError
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Button(
+                onClick = {
+                    firstNameError = if (firstName.isBlank()) "First name is required" else null
+                    lastNameError = if (lastName.isBlank()) "Last name is required" else null
+                    emailError = when {
+                        email.isBlank() -> "Email is required"
+                        !android.util.Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches() ->
+                            "Enter a valid email address"
+                        else -> null
+                    }
+
+                    if (listOf(firstNameError, lastNameError, emailError).all { it == null }) {
+                        onRegister(firstName.trim(), lastName.trim(), email.trim())
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 20.dp),
+                contentPadding = PaddingValues(vertical = 12.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = LittleLemonYellow,
+                    contentColor = LittleLemonCharcoal
+                ),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFF48E1C))
             ) {
                 Text(
-                    text = "Personal information",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = LittleLemonGreen
+                    text = "Register",
+                    style = MaterialTheme.typography.titleMedium
                 )
-
-                Spacer(modifier = Modifier.height(18.dp))
-
-                OnboardingField(
-                    value = firstName,
-                    onValueChange = { firstName = it },
-                    label = "First name",
-                    errorMessage = firstNameError
-                )
-                OnboardingField(
-                    value = lastName,
-                    onValueChange = { lastName = it },
-                    label = "Last name",
-                    errorMessage = lastNameError
-                )
-                OnboardingField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = "Email",
-                    keyboardType = KeyboardType.Email,
-                    errorMessage = emailError
-                )
-                OnboardingField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = "Password",
-                    keyboardType = KeyboardType.Password,
-                    visualTransformation = PasswordVisualTransformation(),
-                    errorMessage = passwordError
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = {
-                        firstNameError = if (firstName.isBlank()) "First name is required" else null
-                        lastNameError = if (lastName.isBlank()) "Last name is required" else null
-                        emailError = when {
-                            email.isBlank() -> "Email is required"
-                            !android.util.Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches() ->
-                                "Enter a valid email address"
-                            else -> null
-                        }
-                        passwordError = when {
-                            password.isBlank() -> "Password is required"
-                            password.length < 6 -> "Use at least 6 characters"
-                            else -> null
-                        }
-
-                        if (listOf(firstNameError, lastNameError, emailError, passwordError).all { it == null }) {
-                            onRegister(firstName.trim(), lastName.trim(), email.trim())
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    contentPadding = PaddingValues(vertical = 14.dp),
-                    shape = RoundedCornerShape(6.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = LittleLemonYellow,
-                        contentColor = Color.Black
-                    )
-                ) {
-                    Text(text = "Register")
-                }
             }
         }
     }
 }
-
-private val LittleLemonLightBorder = Color(0xFFD9DEDC)
 
 @Composable
 private fun OnboardingField(
@@ -186,25 +176,21 @@ private fun OnboardingField(
     onValueChange: (String) -> Unit,
     label: String,
     keyboardType: KeyboardType = KeyboardType.Text,
-    visualTransformation: VisualTransformation = VisualTransformation.None,
     errorMessage: String? = null
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = if (errorMessage == null) LittleLemonGreen else MaterialTheme.colorScheme.error
+            color = LittleLemonCharcoal
         )
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 56.dp),
+            modifier = Modifier.fillMaxWidth(),
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-            visualTransformation = visualTransformation,
-            shape = RoundedCornerShape(6.dp),
+            shape = RoundedCornerShape(8.dp),
             isError = errorMessage != null,
             supportingText = errorMessage?.let { message -> { Text(message) } }
         )
