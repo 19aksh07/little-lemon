@@ -42,11 +42,18 @@ import com.example.littlelemon.ui.theme.LittleLemonYellow
 import com.example.littlelemon.ui.theme.LittleLemonTheme
 
 @Composable
-fun Onboarding(modifier: Modifier = Modifier) {
+fun Onboarding(
+    modifier: Modifier = Modifier,
+    onRegister: (String) -> Unit = {}
+) {
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var firstNameError by remember { mutableStateOf<String?>(null) }
+    var lastNameError by remember { mutableStateOf<String?>(null) }
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = modifier
@@ -105,31 +112,53 @@ fun Onboarding(modifier: Modifier = Modifier) {
                 OnboardingField(
                     value = firstName,
                     onValueChange = { firstName = it },
-                    label = "First name"
+                    label = "First name",
+                    errorMessage = firstNameError
                 )
                 OnboardingField(
                     value = lastName,
                     onValueChange = { lastName = it },
-                    label = "Last name"
+                    label = "Last name",
+                    errorMessage = lastNameError
                 )
                 OnboardingField(
                     value = email,
                     onValueChange = { email = it },
                     label = "Email",
-                    keyboardType = KeyboardType.Email
+                    keyboardType = KeyboardType.Email,
+                    errorMessage = emailError
                 )
                 OnboardingField(
                     value = password,
                     onValueChange = { password = it },
                     label = "Password",
                     keyboardType = KeyboardType.Password,
-                    visualTransformation = PasswordVisualTransformation()
+                    visualTransformation = PasswordVisualTransformation(),
+                    errorMessage = passwordError
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = { },
+                    onClick = {
+                        firstNameError = if (firstName.isBlank()) "First name is required" else null
+                        lastNameError = if (lastName.isBlank()) "Last name is required" else null
+                        emailError = when {
+                            email.isBlank() -> "Email is required"
+                            !android.util.Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches() ->
+                                "Enter a valid email address"
+                            else -> null
+                        }
+                        passwordError = when {
+                            password.isBlank() -> "Password is required"
+                            password.length < 6 -> "Use at least 6 characters"
+                            else -> null
+                        }
+
+                        if (listOf(firstNameError, lastNameError, emailError, passwordError).all { it == null }) {
+                            onRegister(firstName.trim())
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     contentPadding = PaddingValues(vertical = 14.dp),
                     shape = RoundedCornerShape(6.dp),
@@ -153,13 +182,14 @@ private fun OnboardingField(
     onValueChange: (String) -> Unit,
     label: String,
     keyboardType: KeyboardType = KeyboardType.Text,
-    visualTransformation: VisualTransformation = VisualTransformation.None
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    errorMessage: String? = null
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = LittleLemonGreen
+            color = if (errorMessage == null) LittleLemonGreen else MaterialTheme.colorScheme.error
         )
         OutlinedTextField(
             value = value,
@@ -170,7 +200,9 @@ private fun OnboardingField(
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             visualTransformation = visualTransformation,
-            shape = RoundedCornerShape(6.dp)
+            shape = RoundedCornerShape(6.dp),
+            isError = errorMessage != null,
+            supportingText = errorMessage?.let { message -> { Text(message) } }
         )
     }
 }

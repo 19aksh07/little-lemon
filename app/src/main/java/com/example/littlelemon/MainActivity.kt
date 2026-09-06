@@ -4,6 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.navigation.compose.rememberNavController
 import com.example.littlelemon.ui.theme.LittleLemonTheme
 
 class MainActivity : ComponentActivity() {
@@ -12,8 +15,37 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             LittleLemonTheme {
-                Onboarding()
+                LittleLemonApp()
             }
         }
     }
+}
+
+@Composable
+private fun LittleLemonApp() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val preferences = remember {
+        context.getSharedPreferences(
+            "little_lemon_session",
+            android.content.Context.MODE_PRIVATE
+        )
+    }
+    val navController = rememberNavController()
+    val startDestination = remember {
+        if (preferences.getBoolean("is_logged_in", false)) "home" else "onboarding"
+    }
+
+    LittleLemonNavHost(
+        navController = navController,
+        startDestination = startDestination,
+        onRegister = { firstName ->
+            preferences.edit()
+                .putBoolean("is_logged_in", true)
+                .putString("first_name", firstName)
+                .apply()
+        },
+        onLogout = {
+            preferences.edit().clear().apply()
+        }
+    )
 }
