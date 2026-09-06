@@ -38,10 +38,13 @@ private fun LittleLemonApp() {
     LittleLemonNavHost(
         navController = navController,
         startDestination = startDestination,
-        onRegister = { firstName ->
+        preferences = preferences,
+        onRegister = { registration ->
             preferences.edit()
                 .putBoolean("is_logged_in", true)
-                .putString("first_name", firstName)
+            .putString("first_name", registration.firstName)
+            .putString("last_name", registration.lastName)
+            .putString("email", registration.email)
                 .apply()
         },
         onLogout = {

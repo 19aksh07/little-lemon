@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,7 +46,7 @@ import com.example.littlelemon.ui.theme.LittleLemonTheme
 @Composable
 fun Onboarding(
     modifier: Modifier = Modifier,
-    onRegister: (String) -> Unit = {}
+    onRegister: (firstName: String, lastName: String, email: String) -> Unit = { _, _, _ -> }
 ) {
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
@@ -61,6 +63,8 @@ fun Onboarding(
             .background(Color.White)
             .verticalScroll(rememberScrollState())
             .imePadding()
+            .statusBarsPadding()
+            .navigationBarsPadding()
             .padding(horizontal = 24.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
@@ -156,7 +160,7 @@ fun Onboarding(
                         }
 
                         if (listOf(firstNameError, lastNameError, emailError, passwordError).all { it == null }) {
-                            onRegister(firstName.trim())
+                            onRegister(firstName.trim(), lastName.trim(), email.trim())
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
