@@ -17,7 +17,8 @@ data class MenuItemEntity(
     val title: String,
     val description: String,
     val price: String,
-    val image: String
+    val image: String,
+    val category: String = ""
 )
 
 @Dao
@@ -32,7 +33,7 @@ interface MenuDao {
     suspend fun insertAll(items: List<MenuItemEntity>)
 }
 
-@Database(entities = [MenuItemEntity::class], version = 1, exportSchema = false)
+@Database(entities = [MenuItemEntity::class], version = 2, exportSchema = false)
 abstract class MenuDatabase : RoomDatabase() {
     abstract fun menuDao(): MenuDao
 
@@ -41,7 +42,7 @@ abstract class MenuDatabase : RoomDatabase() {
             context.applicationContext,
             MenuDatabase::class.java,
             "little_lemon_menu.db"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
     }
 }
 
@@ -50,5 +51,6 @@ fun MenuItemNetwork.toEntity(): MenuItemEntity = MenuItemEntity(
     title = title,
     description = description,
     price = price,
-    image = image
+    image = image,
+    category = category
 )

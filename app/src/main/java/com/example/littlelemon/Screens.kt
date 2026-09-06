@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,19 +29,29 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.filled.Search
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.example.littlelemon.ui.theme.LittleLemonCharcoal
@@ -61,6 +72,25 @@ fun HomeScreen(
     onRetryMenu: () -> Unit = {},
     onProfileClick: () -> Unit
 ) {
+    var searchPhrase by remember { mutableStateOf("") }
+    var selectedCategory by remember { mutableStateOf("all") }
+    val categories = remember(menuItems) {
+        listOf("all") + menuItems
+            .map { it.category.trim().lowercase() }
+            .filter { it.isNotBlank() }
+            .distinct()
+            .sorted()
+    }
+    val filteredItems = menuItems.filter { item ->
+        val categoryMatches = selectedCategory == "all" ||
+            item.category.equals(selectedCategory, ignoreCase = true)
+        val query = searchPhrase.trim()
+        val searchMatches = query.isBlank() ||
+            item.title.contains(query, ignoreCase = true) ||
+            item.description.contains(query, ignoreCase = true)
+        categoryMatches && searchMatches
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -78,9 +108,17 @@ fun HomeScreen(
                 .padding(horizontal = 20.dp, vertical = 28.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            HeroSection()
+            HeroSection(
+                searchPhrase = searchPhrase,
+                onSearchPhraseChange = { searchPhrase = it }
+            )
+            CategoryBreakdown(
+                categories = categories,
+                selectedCategory = selectedCategory,
+                onCategorySelected = { selectedCategory = it }
+            )
             MenuItems(
-                items = menuItems,
+                items = filteredItems,
                 isLoading = menuLoading,
                 errorMessage = menuError,
                 onRetry = onRetryMenu
@@ -90,7 +128,10 @@ fun HomeScreen(
 }
 
 @Composable
-private fun HeroSection() {
+private fun HeroSection(
+    searchPhrase: String,
+    onSearchPhraseChange: (String) -> Unit
+) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -118,6 +159,53 @@ private fun HeroSection() {
                     .size(132.dp)
                     .clip(RoundedCornerShape(14.dp))
             )
+        }
+        OutlinedTextField(
+            value = searchPhrase,
+            onValueChange = onSearchPhraseChange,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            placeholder = { Text("Enter search phrase") },
+            leadingIcon = {
+                Icon(Icons.Default.Search, contentDescription = "Search menu")
+            },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            shape = RoundedCornerShape(10.dp)
+        )
+    }
+}
+
+@Composable
+private fun CategoryBreakdown(
+    categories: List<String>,
+    selectedCategory: String,
+    onCategorySelected: (String) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Text(
+            "Browse by category",
+            style = MaterialTheme.typography.titleMedium,
+            color = LittleLemonCharcoal
+        )
+        Row(
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            categories.forEach { category ->
+                FilterChip(
+                    selected = selectedCategory == category,
+                    onClick = { onCategorySelected(category) },
+                    label = { Text(category.replaceFirstChar { it.uppercase() }) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = LittleLemonGreen,
+                        selectedLabelColor = Color.White,
+                        containerColor = Color.White,
+                        labelColor = LittleLemonGreen
+                    )
+                )
+            }
         }
     }
 }
@@ -157,6 +245,12 @@ fun MenuItems(
             ) {
                 Text("Try again")
             }
+        } else if (items.isEmpty()) {
+            Text(
+                "No menu items match your filters.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MutedText
+            )
         } else {
             items.forEach { item -> MenuItemCard(item) }
         }

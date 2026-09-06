@@ -33,7 +33,9 @@ data class MenuItemNetwork(
     @SerialName("price")
     val price: String,
     @SerialName("image")
-    val image: String
+    val image: String,
+    @SerialName("category")
+    val category: String = ""
 )
 
 fun createMenuHttpClient(): HttpClient = HttpClient {
