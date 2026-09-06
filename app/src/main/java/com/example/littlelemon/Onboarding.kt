@@ -79,7 +79,7 @@ fun Onboarding(
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Little Lemon logo",
-                modifier = Modifier.height(40.dp)
+                modifier = Modifier.height(120.dp)
             )
         }
 

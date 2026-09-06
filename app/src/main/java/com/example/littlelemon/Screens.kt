@@ -134,35 +134,32 @@ private fun HeroSection(
         modifier = Modifier
             .fillMaxWidth()
             .background(LittleLemonGreen)
-            .padding(horizontal = 20.dp, vertical = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = 20.dp, vertical = 20.dp)
     ) {
         Text(
             "Little Lemon",
             style = MaterialTheme.typography.displayLarge,
-            color = LittleLemonYellow
+            color = LittleLemonYellow,
+            modifier = Modifier.padding(bottom = 0.dp)
         )
+        Text(
+            "Chicago",
+            style = MaterialTheme.typography.displayMedium,
+            color = Color.White,
+            modifier = Modifier.padding(top = 0.dp)
+        )
+        Spacer(modifier = Modifier.height(16.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                Text(
-                    "Chicago",
-                    style = MaterialTheme.typography.displayMedium,
-                    color = Color.White
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    "We are a family-owned Mediterranean restaurant, focused on traditional recipes served with a modern twist",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.White
-                )
-            }
+            Text(
+                "We are a family-owned Mediterranean restaurant, focused on traditional recipes served with a modern twist",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White,
+                modifier = Modifier.weight(1f).padding(end = 16.dp)
+            )
             Image(
                 painter = painterResource(R.drawable.hero_image),
                 contentDescription = "Little Lemon dishes",
@@ -172,6 +169,7 @@ private fun HeroSection(
                     .clip(RoundedCornerShape(16.dp))
             )
         }
+        Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = searchPhrase,
             onValueChange = onSearchPhraseChange,
@@ -358,6 +356,7 @@ private val MenuItemEntity.localImageRes: Int?
 @Composable
 fun ProfileScreen(
     preferences: SharedPreferences,
+    onBack: () -> Unit,
     onLogout: () -> Unit
 ) {
     val firstName = preferences.getString("first_name", "") ?: ""
@@ -372,12 +371,12 @@ fun ProfileScreen(
             .navigationBarsPadding(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AppHeader(onProfileClick = {})
+        AppHeader(onBack = onBack)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 40.dp),
+                .padding(horizontal = 20.dp, vertical = 20.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Text(
@@ -385,6 +384,22 @@ fun ProfileScreen(
                 style = MaterialTheme.typography.titleLarge,
                 color = LittleLemonCharcoal
             )
+
+            // Profile Image in content - improvised styling and alignment
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.profile_vector),
+                    contentDescription = "Profile photo",
+                    modifier = Modifier
+                        .size(150.dp)
+                        .clip(CircleShape)
+                        .border(2.dp, LittleLemonGreen, CircleShape)
+                        .background(LittleLemonLightGray)
+                )
+            }
 
             ProfileField(label = "First name", value = firstName)
             ProfileField(label = "Last name", value = lastName)
@@ -433,7 +448,10 @@ private fun ProfileField(label: String, value: String) {
 }
 
 @Composable
-private fun AppHeader(onProfileClick: () -> Unit) {
+private fun AppHeader(
+    onProfileClick: (() -> Unit)? = null,
+    onBack: (() -> Unit)? = null
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -441,20 +459,34 @@ private fun AppHeader(onProfileClick: () -> Unit) {
             .padding(horizontal = 20.dp, vertical = 20.dp),
         contentAlignment = Alignment.Center
     ) {
+        if (onBack != null) {
+            IconButton(
+                onClick = onBack,
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .size(40.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = LittleLemonGreen
+                )
+            }
+        }
+
         Image(
             painter = painterResource(R.drawable.logo),
             contentDescription = "Little Lemon logo",
-            modifier = Modifier.height(40.dp)
+            modifier = Modifier.height(60.dp)
         )
-        // Only show profile icon if a click handler is provided (Home screen)
-        if (onProfileClick != {}) {
+
+        if (onProfileClick != null) {
             Image(
                 painter = painterResource(R.drawable.profile_vector),
                 contentDescription = "Open profile",
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    .size(48.dp)
-                    .clip(CircleShape)
+                    .size(50.dp)
                     .clickable(onClick = onProfileClick)
             )
         }

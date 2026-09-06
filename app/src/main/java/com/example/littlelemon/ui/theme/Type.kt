@@ -21,12 +21,14 @@ val Typography = Typography(
     displayLarge = TextStyle(
         fontFamily = Markazi,
         fontWeight = FontWeight.Medium,
-        fontSize = 64.sp
+        fontSize = 64.sp,
+        lineHeight = 60.sp
     ),
     displayMedium = TextStyle(
         fontFamily = Markazi,
         fontWeight = FontWeight.Normal,
-        fontSize = 40.sp
+        fontSize = 40.sp,
+        lineHeight = 36.sp
     ),
     headlineSmall = TextStyle(
         fontFamily = Karla,
