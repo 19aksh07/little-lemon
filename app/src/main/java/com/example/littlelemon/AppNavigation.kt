@@ -1,9 +1,11 @@
 package com.example.littlelemon
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.compose.runtime.livedata.observeAsState
 
 data class RegistrationData(
     val firstName: String,
@@ -23,6 +25,10 @@ fun LittleLemonNavHost(
     startDestination: String,
     onRegister: (RegistrationData) -> Unit,
     preferences: android.content.SharedPreferences,
+    database: MenuDatabase,
+    menuLoading: Boolean,
+    menuError: String?,
+    onRetryMenu: () -> Unit,
     onLogout: () -> Unit
 ) {
     NavHost(navController = navController, startDestination = startDestination) {
@@ -36,7 +42,14 @@ fun LittleLemonNavHost(
             })
         }
         composable(Routes.HOME) {
-            HomeScreen(onProfileClick = { navController.navigate(Routes.PROFILE) })
+            val menuItems by database.menuDao().observeAll().observeAsState(emptyList())
+            HomeScreen(
+                menuItems = menuItems,
+                menuLoading = menuLoading,
+                menuError = menuError,
+                onRetryMenu = onRetryMenu,
+                onProfileClick = { navController.navigate(Routes.PROFILE) }
+            )
         }
         composable(Routes.PROFILE) {
             ProfileScreen(

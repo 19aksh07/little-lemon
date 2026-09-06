@@ -41,6 +41,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.layout.ContentScale
+import com.bumptech.glide.integration.compose.GlideImage
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.example.littlelemon.ui.theme.LittleLemonCharcoal
 import com.example.littlelemon.ui.theme.LittleLemonGreen
 import com.example.littlelemon.ui.theme.LittleLemonLightGray
@@ -52,7 +54,13 @@ private val CardBorder = Color(0xFFD9DEDC)
 private val MutedText = Color(0xFF66736E)
 
 @Composable
-fun HomeScreen(onProfileClick: () -> Unit) {
+fun HomeScreen(
+    menuItems: List<MenuItemEntity> = emptyList(),
+    menuLoading: Boolean = false,
+    menuError: String? = null,
+    onRetryMenu: () -> Unit = {},
+    onProfileClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -66,38 +74,146 @@ fun HomeScreen(onProfileClick: () -> Unit) {
             modifier = Modifier
                 .fillMaxWidth()
                 .widthIn(max = 560.dp)
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 28.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                color = Color.White,
-                border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+            HeroSection()
+            MenuItems(
+                items = menuItems,
+                isLoading = menuLoading,
+                errorMessage = menuError,
+                onRetry = onRetryMenu
+            )
+        }
+    }
+}
+
+@Composable
+private fun HeroSection() {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = LittleLemonGreen
+    ) {
+        Row(
+            modifier = Modifier.padding(20.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Little Lemon", style = MaterialTheme.typography.headlineSmall, color = LittleLemonYellow)
+                Text("Chicago", style = MaterialTheme.typography.titleMedium, color = Color.White)
+                Text(
+                    "We are a family-owned Mediterranean restaurant, focused on traditional recipes served with a modern twist",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.White
+                )
+            }
+            Image(
+                painter = painterResource(R.drawable.hero_image),
+                contentDescription = "Little Lemon dishes",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(132.dp)
+                    .clip(RoundedCornerShape(14.dp))
+            )
+        }
+    }
+}
+
+@Composable
+fun MenuItems(
+    items: List<MenuItemEntity>,
+    isLoading: Boolean,
+    errorMessage: String?,
+    onRetry: () -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        Text(
+            "Menu",
+            style = MaterialTheme.typography.titleLarge,
+            color = LittleLemonCharcoal
+        )
+        if (isLoading && items.isEmpty()) {
+            Text(
+                "Loading today's menu...",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MutedText
+            )
+        } else if (errorMessage != null && items.isEmpty()) {
+            Text(
+                "We couldn't load the menu right now.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MutedText
+            )
+            Button(
+                onClick = onRetry,
+                shape = RoundedCornerShape(10.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = LittleLemonYellow,
+                    contentColor = LittleLemonCharcoal
+                )
             ) {
-                Column(
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 36.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                Text("Try again")
+            }
+        } else {
+            items.forEach { item -> MenuItemCard(item) }
+        }
+    }
+}
+
+@Composable
+@OptIn(ExperimentalGlideComposeApi::class)
+private fun MenuItemCard(item: MenuItemEntity) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        color = Color.White,
+        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+    ) {
+        Row(
+            modifier = Modifier.padding(14.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            GlideImage(
+                model = item.localImageRes ?: item.image,
+                contentDescription = item.title,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(104.dp)
+                    .clip(RoundedCornerShape(12.dp))
+            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top
                 ) {
-                    Text("Home", style = MaterialTheme.typography.titleLarge, color = LittleLemonCharcoal)
-                    Text(
-                        "Welcome to Little Lemon",
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = LittleLemonGreen,
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        "Fresh Mediterranean flavors, made for sharing.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MutedText,
-                        textAlign = TextAlign.Center
-                    )
+                    Text(item.title, style = MaterialTheme.typography.titleMedium, color = LittleLemonCharcoal)
+                    Text("$${item.price}", style = MaterialTheme.typography.titleMedium, color = LittleLemonGreen)
                 }
+                Text(
+                    item.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MutedText,
+                    maxLines = 3
+                )
             }
         }
     }
 }
+
+private val MenuItemEntity.localImageRes: Int?
+    get() = when (title.trim().lowercase()) {
+        "grilled fish" -> R.drawable.grilled_fish
+        "lemon desert", "lemon dessert" -> R.drawable.lemon_dessert
+        else -> null
+    }
 
 @Composable
 fun ProfileScreen(
@@ -143,7 +259,6 @@ fun ProfileScreen(
                         modifier = Modifier
                             .size(128.dp)
                             .clip(CircleShape)
-                            .border(3.dp, LittleLemonYellow, CircleShape)
                     )
                     Text(
                         "Profile information",
@@ -239,7 +354,6 @@ private fun AppHeader(onProfileClick: () -> Unit) {
                 .align(Alignment.CenterEnd)
                 .size(44.dp)
                 .clip(CircleShape)
-                .border(2.dp, LittleLemonGreen, CircleShape)
                 .clickable(onClick = onProfileClick)
         )
     }
